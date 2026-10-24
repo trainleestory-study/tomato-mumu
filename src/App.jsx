@@ -1,32 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Clock, Calendar, BarChart3, Settings, Play, Pause, Square, RotateCcw, 
-  Check, Sparkles, Gift, Edit2 
+  Plus, Trash2, Edit2, Upload, Gift, AlertCircle, Check, Sparkles 
 } from 'lucide-react';
 
 export default function TomatoMuMuApp() {
   const [activeTab, setActiveTab] = useState('schedule');
 
   const [tags, setTags] = useState([
-    { id: '1', name: '玩具車車', defaultMinutes: 15, icon: '🚗', customCompletedImageSrc: '' },
-    { id: '2', name: '自由畫畫', defaultMinutes: 20, icon: '🎨', customCompletedImageSrc: '' },
-    { id: '3', name: '閱讀時間', defaultMinutes: 25, icon: '📚', customCompletedImageSrc: '' },
-    { id: '4', name: '積木城堡', defaultMinutes: 30, icon: '🧩', customCompletedImageSrc: '' },
-    { id: '5', name: '專注蕃茄', defaultMinutes: 25, icon: '🍅', customCompletedImageSrc: '' },
+    { id: '1', name: '玩具車車', defaultMinutes: 15, color: '#FFB7B2', icon: '🚗', customSadImageSrc: '', customCompletedImageSrc: '' },
+    { id: '2', name: '自由畫畫', defaultMinutes: 20, color: '#FFDAC1', icon: '🎨', customSadImageSrc: '', customCompletedImageSrc: '' },
+    { id: '3', name: '閱讀時間', defaultMinutes: 25, color: '#E2F0CB', icon: '📚', customSadImageSrc: '', customCompletedImageSrc: '' },
+    { id: '4', name: '積木城堡', defaultMinutes: 30, color: '#B5EAD7', icon: '🧩', customSadImageSrc: '', customCompletedImageSrc: '' },
+    { id: '5', name: '專注蕃茄', defaultMinutes: 25, color: '#C7CEEA', icon: '🍅', customSadImageSrc: '', customCompletedImageSrc: '' },
   ]);
 
   const [tasks, setTasks] = useState([
-    { id: 't1', tagId: '3', timeStr: '10:30 AM', completed: true, overdue: false },
-    { id: 't2', tagId: '1', timeStr: '02:00 PM', completed: false, overdue: true },
-    { id: 't3', tagId: '2', timeStr: '04:00 PM', completed: false, overdue: false },
+    { id: 't1', tagId: '3', timeStr: '10:30 AM', completed: true, overdue: false, rewardImage: '' },
+    { id: 't2', tagId: '1', timeStr: '02:00 PM', completed: false, overdue: true, rewardImage: '' },
+    { id: 't3', tagId: '2', timeStr: '04:00 PM', completed: false, overdue: false, rewardImage: '' },
   ]);
 
   const [selectedTagForTimer, setSelectedTagForTimer] = useState(tags[0]);
   const [timeLeft, setTimeLeft] = useState(15 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+
+  const [history, setHistory] = useState([
+    { id: 'h1', tagName: '閱讀時間', type: 'completed', time: '10:30 AM', icon: '📚', rewardIcon: '' }
+  ]);
+
   const [currentTimeStr, setCurrentTimeStr] = useState('');
   const [editingTag, setEditingTag] = useState(null);
+  const [activeTaskForReward, setActiveTaskForReward] = useState(null);
 
   useEffect(() => {
     const updateTime = () => {
@@ -49,6 +55,7 @@ export default function TomatoMuMuApp() {
       timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
     } else if (timeLeft === 0 && isRunning) {
       setIsRunning(false);
+      handleCompleteTask();
     }
     return () => clearInterval(timer);
   }, [isRunning, isPaused, timeLeft]);
@@ -67,14 +74,42 @@ export default function TomatoMuMuApp() {
     setActiveTab('timer');
   };
 
-  const handleImageUpload = (e, fieldKey) => {
-    const uploadedFile = e.target.files[0];
-    if (uploadedFile) {
+  const handleCompleteTask = () => {
+    setHistory(prev => [
+      { id: Date.now(), tagName: selectedTagForTimer.name, type: 'completed', time: currentTimeStr, icon: selectedTagForTimer.icon, rewardIcon: selectedTagForTimer.customCompletedImageSrc },
+      ...prev
+    ]);
+    setIsRunning(false);
+  };
+
+  const handleStopTimer = () => {
+    setHistory(prev => [
+      { id: Date.now(), tagName: selectedTagForTimer.name, type: 'failed', time: currentTimeStr, icon: selectedTagForTimer.icon },
+      ...prev
+    ]);
+    setIsRunning(false);
+    setIsPaused(false);
+  };
+
+  const handleImageUpload = (e, field) => {
+    const file = e.target.files[0];
+    if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setEditingTag(prev => ({ ...prev, [fieldKey]: reader.result }));
+        setEditingTag(prev => ({ ...prev, [field]: reader.result }));
       };
-      reader.readAsDataURL(uploadedFile);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleTaskRewardUpload = (e, taskId) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setTasks(tasks.map(t => t.id === taskId ? { ...t, completed: true, rewardImage: reader.result } : t));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -123,7 +158,7 @@ export default function TomatoMuMuApp() {
               <button onClick={() => setIsPaused(!isPaused)} className="flex-1 py-4 bg-amber-300 hover:bg-amber-400 text-amber-950 font-black rounded-2xl shadow-md flex items-center justify-center gap-2 text-lg">
                 {isPaused ? <Play size={22} /> : <Pause size={22} />} {isPaused ? '繼續計時' : '暫停倒數'}
               </button>
-              <button onClick={() => setIsRunning(false)} className="p-4 bg-red-100 text-red-600 rounded-2xl border-2 border-red-200">
+              <button onClick={handleStopTimer} className="p-4 bg-red-100 text-red-600 rounded-2xl border-2 border-red-200">
                 <Square size={24} />
               </button>
             </div>
@@ -153,15 +188,31 @@ export default function TomatoMuMuApp() {
                         </span>
                       </div>
 
-                      <div>
+                      <div className="flex items-center gap-2">
                         {task.completed ? (
-                          <div className="px-4 py-2 bg-pink-200 rounded-2xl flex items-center gap-2 shadow-sm">
-                            <span className="font-bold text-amber-950 text-sm">已完成</span>
+                          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-2xl shadow-sm border border-sky-200">
+                            {task.rewardImage ? (
+                              <img src={task.rewardImage} alt="Reward" className="w-8 h-8 object-cover rounded-lg border border-amber-200" />
+                            ) : tag.customCompletedImageSrc ? (
+                              <img src={tag.customCompletedImageSrc} alt="Reward" className="w-8 h-8 object-cover rounded-lg border border-amber-200" />
+                            ) : (
+                              <Gift className="text-pink-500" size={20} />
+                            )}
+                            <label className="cursor-pointer bg-pink-100 hover:bg-pink-200 text-pink-900 text-xs font-bold px-2.5 py-1.5 rounded-xl flex items-center gap-1">
+                              <Upload size={14} /> 上傳獎勵圖
+                              <input type="file" accept="image/*" className="hidden" onChange={(e) => handleTaskRewardUpload(e, task.id)} />
+                            </label>
                           </div>
                         ) : (
-                          <button onClick={() => handleStartTimer(tag)} className="px-4 py-2 bg-amber-200 hover:bg-amber-300 rounded-xl font-bold text-amber-900 shadow-sm">
-                            開始
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => handleStartTimer(tag)} className="px-4 py-2 bg-amber-200 hover:bg-amber-300 rounded-xl font-bold text-amber-900 shadow-sm">
+                              開始
+                            </button>
+                            <label className="cursor-pointer px-3 py-2 bg-pink-100 hover:bg-pink-200 text-pink-900 rounded-xl font-bold text-xs flex items-center gap-1 shadow-sm">
+                              <Upload size={14} /> 上傳完成圖
+                              <input type="file" accept="image/*" className="hidden" onChange={(e) => handleTaskRewardUpload(e, task.id)} />
+                            </label>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -242,24 +293,14 @@ export default function TomatoMuMuApp() {
             <div className="space-y-3">
               <div>
                 <label className="text-sm font-bold text-[#8C7A6B]">標籤名稱</label>
-                <input 
-                  type="text" 
-                  value={editingTag.name} 
-                  onChange={(e) => setEditingTag({...editingTag, name: e.target.value})} 
-                  className="w-full mt-1 p-3 bg-[#FDFBF7] rounded-2xl border-2 border-[#F0EBE1] font-bold" 
-                />
+                <input type="text" value={editingTag.name} onChange={(e) => setEditingTag({...editingTag, name: e.target.value})} className="w-full mt-1 p-3 bg-[#FDFBF7] rounded-2xl border-2 border-[#F0EBE1] font-bold" />
               </div>
 
               <div>
                 <label className="text-sm font-bold text-[#8C7A6B] flex items-center gap-2">
-                  <Sparkles size={16} className="text-amber-500" /> 上傳完成獎勵圖示 (PNG)
+                  <Sparkles size={16} className="text-amber-500" /> 上傳完成預設獎勵圖示 (PNG/JPG)
                 </label>
-                <input 
-                  type="file" 
-                  accept="image/png, image/jpeg" 
-                  onChange={(e) => handleImageUpload(e, 'customCompletedImageSrc')} 
-                  className="w-full mt-1 text-xs file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:font-bold file:bg-amber-100 file:text-amber-900" 
-                />
+                <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'customCompletedImageSrc')} className="w-full mt-1 text-xs file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:font-bold file:bg-amber-100 file:text-amber-900" />
               </div>
             </div>
 
