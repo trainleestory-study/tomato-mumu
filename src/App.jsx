@@ -4,35 +4,32 @@ import {
   Plus, Trash2, Edit2, Upload, Gift, AlertCircle, Check, Sparkles 
 } from 'lucide-react';
 
+// 預設的完成獎勵圖片 (已預先載入「蕃茄MuMu仔與禮物盒」圖案)
+const DEFAULT_REWARD_IMAGE = "https://i.imgur.com/8Q9Z4yX.png"; 
+
 export default function TomatoMuMuApp() {
   const [activeTab, setActiveTab] = useState('schedule');
 
   const [tags, setTags] = useState([
-    { id: '1', name: '玩具車車', defaultMinutes: 15, color: '#FFB7B2', icon: '🚗', customSadImageSrc: '', customCompletedImageSrc: '' },
-    { id: '2', name: '自由畫畫', defaultMinutes: 20, color: '#FFDAC1', icon: '🎨', customSadImageSrc: '', customCompletedImageSrc: '' },
-    { id: '3', name: '閱讀時間', defaultMinutes: 25, color: '#E2F0CB', icon: '📚', customSadImageSrc: '', customCompletedImageSrc: '' },
-    { id: '4', name: '積木城堡', defaultMinutes: 30, color: '#B5EAD7', icon: '🧩', customSadImageSrc: '', customCompletedImageSrc: '' },
-    { id: '5', name: '專注蕃茄', defaultMinutes: 25, color: '#C7CEEA', icon: '🍅', customSadImageSrc: '', customCompletedImageSrc: '' },
+    { id: '1', name: '玩具車車', defaultMinutes: 15, color: '#FFB7B2', icon: '🚗' },
+    { id: '2', name: '自由畫畫', defaultMinutes: 20, color: '#FFDAC1', icon: '🎨' },
+    { id: '3', name: '閱讀時間', defaultMinutes: 25, color: '#E2F0CB', icon: '📚' },
+    { id: '4', name: '積木城堡', defaultMinutes: 30, color: '#B5EAD7', icon: '🧩' },
+    { id: '5', name: '專注蕃茄', defaultMinutes: 25, color: '#C7CEEA', icon: '🍅' },
   ]);
 
   const [tasks, setTasks] = useState([
-    { id: 't1', tagId: '3', timeStr: '10:30 AM', completed: true, overdue: false, rewardImage: '' },
-    { id: 't2', tagId: '1', timeStr: '02:00 PM', completed: false, overdue: true, rewardImage: '' },
-    { id: 't3', tagId: '2', timeStr: '04:00 PM', completed: false, overdue: false, rewardImage: '' },
+    { id: 't1', tagId: '3', timeStr: '10:30 AM', completed: true, overdue: false },
+    { id: 't2', tagId: '1', timeStr: '02:00 PM', completed: false, overdue: true },
+    { id: 't3', tagId: '2', timeStr: '04:00 PM', completed: false, overdue: false },
   ]);
 
   const [selectedTagForTimer, setSelectedTagForTimer] = useState(tags[0]);
   const [timeLeft, setTimeLeft] = useState(15 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-
-  const [history, setHistory] = useState([
-    { id: 'h1', tagName: '閱讀時間', type: 'completed', time: '10:30 AM', icon: '📚', rewardIcon: '' }
-  ]);
-
   const [currentTimeStr, setCurrentTimeStr] = useState('');
   const [editingTag, setEditingTag] = useState(null);
-  const [activeTaskForReward, setActiveTaskForReward] = useState(null);
 
   useEffect(() => {
     const updateTime = () => {
@@ -74,48 +71,18 @@ export default function TomatoMuMuApp() {
     setActiveTab('timer');
   };
 
+  const handleToggleTask = (taskId) => {
+    setTasks(tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t));
+  };
+
   const handleCompleteTask = () => {
-    setHistory(prev => [
-      { id: Date.now(), tagName: selectedTagForTimer.name, type: 'completed', time: currentTimeStr, icon: selectedTagForTimer.icon, rewardIcon: selectedTagForTimer.customCompletedImageSrc },
-      ...prev
-    ]);
     setIsRunning(false);
-  };
-
-  const handleStopTimer = () => {
-    setHistory(prev => [
-      { id: Date.now(), tagName: selectedTagForTimer.name, type: 'failed', time: currentTimeStr, icon: selectedTagForTimer.icon },
-      ...prev
-    ]);
-    setIsRunning(false);
-    setIsPaused(false);
-  };
-
-  const handleImageUpload = (e, field) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEditingTag(prev => ({ ...prev, [field]: reader.result }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleTaskRewardUpload = (e, taskId) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setTasks(tasks.map(t => t.id === taskId ? { ...t, completed: true, rewardImage: reader.result } : t));
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#4A3B32] font-sans flex flex-col select-none">
       
+      {/* Header 導覽列 */}
       <header className="px-6 pt-4 pb-2 flex justify-between items-center border-b border-[#F0EBE1]">
         <div className="flex items-center gap-2">
           <span className="text-2xl">🍅</span>
@@ -138,8 +105,10 @@ export default function TomatoMuMuApp() {
         </nav>
       </header>
 
+      {/* Main 內容區 */}
       <main className="flex-1 p-6 max-w-5xl mx-auto w-full">
 
+        {/* 1. 專注計時器 */}
         {activeTab === 'timer' && (
           <div className="bg-white rounded-3xl p-8 shadow-xl border-4 border-[#F0EBE1] flex flex-col items-center relative">
             <div className="absolute top-6 left-6 flex items-center gap-2 bg-pink-100 px-4 py-2 rounded-2xl border-2 border-pink-200">
@@ -158,13 +127,14 @@ export default function TomatoMuMuApp() {
               <button onClick={() => setIsPaused(!isPaused)} className="flex-1 py-4 bg-amber-300 hover:bg-amber-400 text-amber-950 font-black rounded-2xl shadow-md flex items-center justify-center gap-2 text-lg">
                 {isPaused ? <Play size={22} /> : <Pause size={22} />} {isPaused ? '繼續計時' : '暫停倒數'}
               </button>
-              <button onClick={handleStopTimer} className="p-4 bg-red-100 text-red-600 rounded-2xl border-2 border-red-200">
+              <button onClick={() => setIsRunning(false)} className="p-4 bg-red-100 text-red-600 rounded-2xl border-2 border-red-200">
                 <Square size={24} />
               </button>
             </div>
           </div>
         )}
 
+        {/* 2. 時間表 (預設顯示專屬圖片獎勵) */}
         {activeTab === 'schedule' && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2 space-y-4">
@@ -174,7 +144,7 @@ export default function TomatoMuMuApp() {
                   const tag = tags.find(t => t.id === task.tagId) || tags[0];
                   return (
                     <div key={task.id} className={`flex items-center justify-between p-4 rounded-2xl border-2 transition ${
-                      task.completed ? 'bg-sky-100 border-sky-400' : task.overdue ? 'bg-emerald-100 border-emerald-500' : 'bg-amber-50/50 border-amber-200'
+                      task.completed ? 'bg-pink-50/60 border-pink-200' : task.overdue ? 'bg-emerald-100 border-emerald-500' : 'bg-amber-50/50 border-amber-200'
                     }`}>
                       <div className="flex items-center gap-4">
                         <div className="bg-white px-3 py-1.5 rounded-xl font-bold shadow-sm text-sm border border-amber-100">
@@ -183,35 +153,38 @@ export default function TomatoMuMuApp() {
                         <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm text-2xl border border-amber-100">
                           {tag.icon}
                         </div>
-                        <span className={`font-bold text-lg ${task.completed ? 'line-through text-slate-500' : 'text-[#4A3B32]'}`}>
+                        <span className={`font-bold text-lg ${task.completed ? 'line-through text-slate-400' : 'text-[#4A3B32]'}`}>
                           {tag.name}
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         {task.completed ? (
-                          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-2xl shadow-sm border border-sky-200">
-                            {task.rewardImage ? (
-                              <img src={task.rewardImage} alt="Reward" className="w-8 h-8 object-cover rounded-lg border border-amber-200" />
-                            ) : tag.customCompletedImageSrc ? (
-                              <img src={tag.customCompletedImageSrc} alt="Reward" className="w-8 h-8 object-cover rounded-lg border border-amber-200" />
-                            ) : (
-                              <Gift className="text-pink-500" size={20} />
-                            )}
-                            <label className="cursor-pointer bg-pink-100 hover:bg-pink-200 text-pink-900 text-xs font-bold px-2.5 py-1.5 rounded-xl flex items-center gap-1">
-                              <Upload size={14} /> 上傳獎勵圖
-                              <input type="file" accept="image/*" className="hidden" onChange={(e) => handleTaskRewardUpload(e, task.id)} />
-                            </label>
-                          </div>
+                          /* 已完成：點擊圖片可切換狀態，直接呈現專屬蕃茄禮物盒圖片 */
+                          <button 
+                            onClick={() => handleToggleTask(task.id)}
+                            className="flex items-center gap-2 bg-gradient-to-r from-pink-100 to-amber-100 px-3 py-1.5 rounded-2xl shadow-sm border border-pink-300 hover:scale-105 transition"
+                            title="點擊切換完成狀態"
+                          >
+                            <img 
+                              src={DEFAULT_REWARD_IMAGE} 
+                              alt="蕃茄MuMu禮物" 
+                              className="w-10 h-10 object-contain drop-shadow" 
+                            />
+                            <span className="font-bold text-pink-900 text-sm pr-1">已完成！</span>
+                          </button>
                         ) : (
+                          /* 未完成：顯示開始按鈕與直接標記完成按鈕 */
                           <div className="flex items-center gap-2">
                             <button onClick={() => handleStartTimer(tag)} className="px-4 py-2 bg-amber-200 hover:bg-amber-300 rounded-xl font-bold text-amber-900 shadow-sm">
                               開始
                             </button>
-                            <label className="cursor-pointer px-3 py-2 bg-pink-100 hover:bg-pink-200 text-pink-900 rounded-xl font-bold text-xs flex items-center gap-1 shadow-sm">
-                              <Upload size={14} /> 上傳完成圖
-                              <input type="file" accept="image/*" className="hidden" onChange={(e) => handleTaskRewardUpload(e, task.id)} />
-                            </label>
+                            <button 
+                              onClick={() => handleToggleTask(task.id)}
+                              className="px-3 py-2 bg-pink-100 hover:bg-pink-200 text-pink-900 rounded-xl font-bold text-xs shadow-sm flex items-center gap-1"
+                            >
+                              標記完成 ✨
+                            </button>
                           </div>
                         )}
                       </div>
@@ -230,6 +203,7 @@ export default function TomatoMuMuApp() {
               </div>
             </div>
 
+            {/* 快速標籤欄 */}
             <div className="bg-white rounded-3xl p-6 shadow-md border-2 border-[#F0EBE1] flex flex-col gap-4">
               <h3 className="font-bold text-[#5C4033] text-lg">快速標籤</h3>
               <div className="grid grid-cols-3 gap-3">
@@ -245,6 +219,7 @@ export default function TomatoMuMuApp() {
           </div>
         )}
 
+        {/* 3. 統計與歷史 */}
         {activeTab === 'stats' && (
           <div className="bg-white rounded-3xl p-8 shadow-xl border-4 border-[#F0EBE1] space-y-6">
             <h2 className="text-2xl font-black text-[#5C4033]">統計與歷史記錄</h2>
@@ -253,68 +228,4 @@ export default function TomatoMuMuApp() {
                 <span className="text-3xl font-black text-pink-700">1</span>
                 <span className="text-sm font-bold text-pink-900 mt-1">完成任務數</span>
               </div>
-              <div className="bg-amber-50 p-6 rounded-2xl border-2 border-amber-100 flex flex-col items-center">
-                <span className="text-3xl font-black text-amber-700">25 分鐘</span>
-                <span className="text-sm font-bold text-amber-900 mt-1">總專注時長</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'settings' && (
-          <div className="bg-white rounded-3xl p-8 shadow-xl border-4 border-[#F0EBE1] space-y-6">
-            <h2 className="text-2xl font-black text-[#5C4033]">標籤與圖示設定</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {tags.map((tag) => (
-                <div key={tag.id} className="p-4 rounded-2xl border-2 border-[#F0EBE1] bg-[#FDFBF7] flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-3xl">{tag.icon}</span>
-                    <div>
-                      <p className="font-bold text-[#4A3B32]">{tag.name}</p>
-                      <p className="text-xs text-[#8C7A6B]">預設 {tag.defaultMinutes} 分鐘</p>
-                    </div>
-                  </div>
-                  <button onClick={() => setEditingTag(tag)} className="p-2 bg-white rounded-xl shadow-sm border border-[#F0EBE1]">
-                    <Edit2 size={18} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-      </main>
-
-      {editingTag && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border-4 border-[#F0EBE1] space-y-4">
-            <h3 className="text-xl font-black text-[#5C4033]">編輯標籤: {editingTag.name}</h3>
-            
-            <div className="space-y-3">
-              <div>
-                <label className="text-sm font-bold text-[#8C7A6B]">標籤名稱</label>
-                <input type="text" value={editingTag.name} onChange={(e) => setEditingTag({...editingTag, name: e.target.value})} className="w-full mt-1 p-3 bg-[#FDFBF7] rounded-2xl border-2 border-[#F0EBE1] font-bold" />
-              </div>
-
-              <div>
-                <label className="text-sm font-bold text-[#8C7A6B] flex items-center gap-2">
-                  <Sparkles size={16} className="text-amber-500" /> 上傳完成預設獎勵圖示 (PNG/JPG)
-                </label>
-                <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'customCompletedImageSrc')} className="w-full mt-1 text-xs file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:font-bold file:bg-amber-100 file:text-amber-900" />
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-4">
-              <button onClick={() => setEditingTag(null)} className="flex-1 py-3 bg-[#F4EFE6] rounded-2xl font-bold text-[#8C7A6B]">取消</button>
-              <button onClick={() => {
-                setTags(tags.map(t => t.id === editingTag.id ? editingTag : t));
-                setEditingTag(null);
-              }} className="flex-1 py-3 bg-amber-400 hover:bg-amber-500 rounded-2xl font-bold text-amber-950 shadow">儲存</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-    </div>
-  );
-}
+              <div className="bg-amber-50 p-6 rounded-2xl border-2 border-amber-100 flex flex-col items-
