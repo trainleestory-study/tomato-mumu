@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 
 // 直接匯入動態的 gift.gif 檔案
-import defaultGiftGif from '/gift.gif';
+import defaultGiftGif from '/gift.png';
 
 export default function TomatoMuMuApp() {
   const [activeTab, setActiveTab] = useState('schedule');
