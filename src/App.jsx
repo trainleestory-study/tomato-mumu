@@ -1,7 +1,6 @@
-src/App.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  Clock, Calendar, BarChart2, Settings, Play, Pause, Square, RotateCcw, 
+  Clock, Calendar, BarChart3, Settings, Play, Pause, Square, RotateCcw, 
   Plus, Trash2, Edit2, Upload, Gift, AlertCircle, Check, Sparkles 
 } from 'lucide-react';
 
@@ -120,7 +119,7 @@ export default function TomatoMuMuApp() {
             <Calendar size={18} /> 時間表
           </button>
           <button onClick={() => setActiveTab('stats')} className={`px-4 py-2 rounded-xl font-bold transition flex items-center gap-2 ${activeTab === 'stats' ? 'bg-white shadow text-[#5C4033]' : 'text-[#8C7A6B]'}`}>
-            <BarChart2 size={18} /> 統計記錄
+            <BarChart3 size={18} /> 統計記錄
           </button>
           <button onClick={() => setActiveTab('settings')} className={`px-4 py-2 rounded-xl font-bold transition flex items-center gap-2 ${activeTab === 'settings' ? 'bg-white shadow text-[#5C4033]' : 'text-[#8C7A6B]'}`}>
             <Settings size={18} /> 標籤設定
