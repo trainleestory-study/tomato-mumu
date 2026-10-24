@@ -4,7 +4,7 @@ import {
   Plus, Trash2, Edit2, Upload, Gift, AlertCircle, Check, Sparkles 
 } from 'lucide-react';
 
-// 預設的完成獎勵圖片 (已預先載入「蕃茄MuMu仔與禮物盒」圖案)
+// 預設的完成獎勵圖片 (讀取專案 public 資料夾中的 gift.png)
 const DEFAULT_REWARD_IMAGE = "/gift.png";
 
 export default function TomatoMuMuApp() {
@@ -228,4 +228,39 @@ export default function TomatoMuMuApp() {
                 <span className="text-3xl font-black text-pink-700">1</span>
                 <span className="text-sm font-bold text-pink-900 mt-1">完成任務數</span>
               </div>
-              <div className="bg-amber-50 p-6 rounded-2xl border-2 border-amber-100 flex flex-col items-
+              <div className="bg-amber-50 p-6 rounded-2xl border-2 border-amber-100 flex flex-col items-center">
+                <span className="text-3xl font-black text-amber-700">25 分鐘</span>
+                <span className="text-sm font-bold text-amber-900 mt-1">總專注時長</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 4. 標籤設定 */}
+        {activeTab === 'settings' && (
+          <div className="bg-white rounded-3xl p-8 shadow-xl border-4 border-[#F0EBE1] space-y-6">
+            <h2 className="text-2xl font-black text-[#5C4033]">標籤與圖示設定</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {tags.map((tag) => (
+                <div key={tag.id} className="p-4 rounded-2xl border-2 border-[#F0EBE1] bg-[#FDFBF7] flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">{tag.icon}</span>
+                    <div>
+                      <p className="font-bold text-[#4A3B32]">{tag.name}</p>
+                      <p className="text-xs text-[#8C7A6B]">預設 {tag.defaultMinutes} 分鐘</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setEditingTag(tag)} className="p-2 bg-white rounded-xl shadow-sm border border-[#F0EBE1]">
+                    <Edit2 size={18} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+      </main>
+
+    </div>
+  );
+}
