@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Clock, Calendar, BarChart3, Settings, Play, Pause, Square, RotateCcw, 
-  Plus, Trash2, Edit2, Upload, Gift, AlertCircle, Check, Sparkles 
+  Edit2, Check 
 } from 'lucide-react';
 
-// 預設的完成獎勵圖片 (讀取專案 public 資料夾中的 gift.png)
-const DEFAULT_REWARD_IMAGE = "/gift.png";
+// 直接匯入動態的 gift.gif 檔案
+import defaultGiftGif from '/gift.gif';
 
 export default function TomatoMuMuApp() {
   const [activeTab, setActiveTab] = useState('schedule');
@@ -52,7 +52,6 @@ export default function TomatoMuMuApp() {
       timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
     } else if (timeLeft === 0 && isRunning) {
       setIsRunning(false);
-      handleCompleteTask();
     }
     return () => clearInterval(timer);
   }, [isRunning, isPaused, timeLeft]);
@@ -73,10 +72,6 @@ export default function TomatoMuMuApp() {
 
   const handleToggleTask = (taskId) => {
     setTasks(tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t));
-  };
-
-  const handleCompleteTask = () => {
-    setIsRunning(false);
   };
 
   return (
@@ -134,7 +129,7 @@ export default function TomatoMuMuApp() {
           </div>
         )}
 
-        {/* 2. 時間表 (預設顯示專屬圖片獎勵) */}
+        {/* 2. 時間表 */}
         {activeTab === 'schedule' && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2 space-y-4">
@@ -160,30 +155,30 @@ export default function TomatoMuMuApp() {
 
                       <div className="flex items-center gap-3">
                         {task.completed ? (
-                          /* 已完成：點擊圖片可切換狀態，直接呈現專屬蕃茄禮物盒圖片 */
+                          /* 已完成：直接展示放大且活潑的 gift.gif 動態獎勵圖案 */
                           <button 
                             onClick={() => handleToggleTask(task.id)}
-                            className="flex items-center gap-2 bg-gradient-to-r from-pink-100 to-amber-100 px-3 py-1.5 rounded-2xl shadow-sm border border-pink-300 hover:scale-105 transition"
-                            title="點擊切換完成狀態"
+                            className="p-1 rounded-2xl hover:scale-110 transition active:scale-95"
+                            title="點擊切換狀態"
                           >
                             <img 
-                              src={DEFAULT_REWARD_IMAGE} 
-                              alt="蕃茄MuMu禮物" 
-                              className="w-10 h-10 object-contain drop-shadow" 
+                              src={defaultGiftGif} 
+                              alt="動態獎勵禮物" 
+                              className="w-16 h-16 object-contain drop-shadow-lg" 
                             />
-                            <span className="font-bold text-pink-900 text-sm pr-1">已完成！</span>
                           </button>
                         ) : (
-                          /* 未完成：顯示開始按鈕與直接標記完成按鈕 */
+                          /* 未完成 / 逾期：顯示開始按鈕與吸引小朋友的大勾選按鈕 (✔) */
                           <div className="flex items-center gap-2">
                             <button onClick={() => handleStartTimer(tag)} className="px-4 py-2 bg-amber-200 hover:bg-amber-300 rounded-xl font-bold text-amber-900 shadow-sm">
                               開始
                             </button>
                             <button 
                               onClick={() => handleToggleTask(task.id)}
-                              className="px-3 py-2 bg-pink-100 hover:bg-pink-200 text-pink-900 rounded-xl font-bold text-xs shadow-sm flex items-center gap-1"
+                              className="w-10 h-10 bg-emerald-500 hover:bg-emerald-600 active:scale-90 text-white rounded-2xl shadow-md flex items-center justify-center transition border-2 border-emerald-300"
+                              title="完成任務"
                             >
-                              標記完成 ✨
+                              <Check size={24} strokeWidth={3} />
                             </button>
                           </div>
                         )}
@@ -204,63 +199,4 @@ export default function TomatoMuMuApp() {
             </div>
 
             {/* 快速標籤欄 */}
-            <div className="bg-white rounded-3xl p-6 shadow-md border-2 border-[#F0EBE1] flex flex-col gap-4">
-              <h3 className="font-bold text-[#5C4033] text-lg">快速標籤</h3>
-              <div className="grid grid-cols-3 gap-3">
-                {tags.map((tag) => (
-                  <button key={tag.id} onClick={() => handleStartTimer(tag)} className="flex flex-col items-center justify-center p-3 rounded-2xl bg-[#FDFBF7] hover:bg-amber-50 border-2 border-[#F0EBE1] shadow-sm aspect-square">
-                    <span className="text-3xl mb-1">{tag.icon}</span>
-                    <span className="text-xs font-bold text-[#5C4033] truncate w-full text-center">{tag.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-          </div>
-        )}
-
-        {/* 3. 統計與歷史 */}
-        {activeTab === 'stats' && (
-          <div className="bg-white rounded-3xl p-8 shadow-xl border-4 border-[#F0EBE1] space-y-6">
-            <h2 className="text-2xl font-black text-[#5C4033]">統計與歷史記錄</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-pink-50 p-6 rounded-2xl border-2 border-pink-100 flex flex-col items-center">
-                <span className="text-3xl font-black text-pink-700">1</span>
-                <span className="text-sm font-bold text-pink-900 mt-1">完成任務數</span>
-              </div>
-              <div className="bg-amber-50 p-6 rounded-2xl border-2 border-amber-100 flex flex-col items-center">
-                <span className="text-3xl font-black text-amber-700">25 分鐘</span>
-                <span className="text-sm font-bold text-amber-900 mt-1">總專注時長</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 4. 標籤設定 */}
-        {activeTab === 'settings' && (
-          <div className="bg-white rounded-3xl p-8 shadow-xl border-4 border-[#F0EBE1] space-y-6">
-            <h2 className="text-2xl font-black text-[#5C4033]">標籤與圖示設定</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {tags.map((tag) => (
-                <div key={tag.id} className="p-4 rounded-2xl border-2 border-[#F0EBE1] bg-[#FDFBF7] flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-3xl">{tag.icon}</span>
-                    <div>
-                      <p className="font-bold text-[#4A3B32]">{tag.name}</p>
-                      <p className="text-xs text-[#8C7A6B]">預設 {tag.defaultMinutes} 分鐘</p>
-                    </div>
-                  </div>
-                  <button onClick={() => setEditingTag(tag)} className="p-2 bg-white rounded-xl shadow-sm border border-[#F0EBE1]">
-                    <Edit2 size={18} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-      </main>
-
-    </div>
-  );
-}
+            <div className="bg-white rounded-3xl p-6 shadow-md border-2 border-[#F0EBE1] flex
