@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 
 // 預設的完成獎勵圖片 (已預先載入「蕃茄MuMu仔與禮物盒」圖案)
-const DEFAULT_REWARD_IMAGE = "https://i.imgur.com/8Q9Z4yX.png"; 
+const DEFAULT_REWARD_IMAGE = "/gift.png";
 
 export default function TomatoMuMuApp() {
   const [activeTab, setActiveTab] = useState('schedule');
